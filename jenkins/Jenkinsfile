@@ -1,0 +1,57 @@
+pipeline {
+  agent any
+  
+  stages {
+    stage('Build') {
+      steps {
+        // Clone the Git repository
+        git url: 'https://github.com/your-username/your-repo.git'
+        
+        // Build the application
+        sh 'mvn clean package'
+      }
+    }
+    
+    stage('Test') {
+      steps {
+        // Run unit tests
+        sh 'mvn test'
+      }
+    }
+    
+    stage('Deploy to AWS') {
+      environment {
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        AWS_DEFAULT_REGION = 'us-west-2'
+        ECR_REPO = 'your-ecr-repo'
+        ECS_CLUSTER = 'your-ecs-cluster'
+        ECS_SERVICE = 'your-ecs-service'
+      }
+      
+      steps {
+        // Build the Docker image
+        sh "docker build -t $ECR_REPO:${BUILD_NUMBER} ."
+        
+        // Authenticate with ECR
+        withCredentials([string(credentialsId: 'aws-ecr-creds', variable: 'DOCKER_AUTH_CONFIG')]) {
+          sh 'aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS 
+--password-stdin $(aws sts get-caller-identity --query "Account" --output 
+text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com'
+        }
+        
+        // Push the Docker image to ECR
+        sh "docker tag $ECR_REPO:${BUILD_NUMBER} $(aws sts get-caller-identity --query "Account" --output 
+text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO:${BUILD_NUMBER}"
+        sh "docker push $(aws sts get-caller-identity --query "Account" --output 
+text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO:${BUILD_NUMBER}"
+        
+        // Update the ECS service with the new Docker image
+        sh "aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --image 
+$(aws sts get-caller-identity --query "Account" --output 
+text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO:${BUILD_NUMBER}"
+      }
+    }
+  }
+}
+
