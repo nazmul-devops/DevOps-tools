@@ -1,4 +1,4 @@
-# Cluster Creation with `ekctl`
+# Cluster Creation with `eksctl`
 check a ckuster
 
 ```sh
