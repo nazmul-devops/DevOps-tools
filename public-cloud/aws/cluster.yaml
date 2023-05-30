@@ -1,0 +1,100 @@
+# cluster.yaml
+---
+apiVersion: eksctl.io/v1alpha5
+# availabilityZones:
+#   - us-east-1e
+#   - us-east-1d
+cloudWatch:
+  clusterLogging: {}
+iam:
+  vpcResourceControllerPolicy: true
+  withOIDC: false
+kind: ClusterConfig
+kubernetesNetworkConfig:
+  ipFamily: IPv4
+managedNodeGroups:
+  - amiFamily: AmazonLinux2
+    desiredCapacity: 4
+    disableIMDSv1: false
+    disablePodIMDS: false
+    iam:
+      withAddonPolicies:
+        albIngress: true
+        appMesh: false
+        appMeshPreview: false
+        # autoScaler: true
+        awsLoadBalancerController: false
+        certManager: true
+        cloudWatch: false
+        ebs: false
+        efs: false
+        externalDNS: false
+        fsx: false
+        imageBuilder: false
+        xRay: false
+    instanceSelector: {}
+    # instanceType: t2.small
+    instanceTypes:
+      ["t2.medium", "t3.medium", "t2.small", "t3.small", "t3a.small"]
+    # taints:
+    #   feaster: "true:NoSchedule"
+    #   # key: feaster
+    #   # value: "true"
+    #   # effect: NoSchedule
+    propagateASGTags: true
+    labels:
+      alpha.eksctl.io/cluster-name: inneed
+      alpha.eksctl.io/nodegroup-name: inneed-node
+      # label-forscaling: inneed-label
+    maxSize: 6
+    minSize: 1
+    name: inneed-node
+    # instancesDistribution:
+    #   maxPrice: 0.02
+    #   instanceTypes: [
+    #       "t2.small",
+    #       "t2.medium",
+    #       "t3.medium",
+    #       "t3.small",
+    #       "t3a.small",
+    #     ] # At least one instance type should be specified
+    #   onDemandBaseCapacity: 0
+    #   onDemandPercentageAboveBaseCapacity: 50
+    #   spotInstancePools: 10
+
+    privateNetworking: false
+    releaseVersion: ""
+    securityGroups:
+      withLocal: null
+      withShared: null
+    spot: true
+    ssh:
+      allow: true
+      # enableSsm: true
+      publicKeyPath: ~/.ssh/inneed-cluster.pub
+    tags:
+      alpha.eksctl.io/nodegroup-name: inneed-node
+      alpha.eksctl.io/nodegroup-type: managed
+      # nodegroup-role: worker
+      # k8s.io/cluster-autoscaler/node-template/label/label-forscaling: inneed-label
+      # k8s.io/cluster-autoscaler/node-template/taint/feaster: "true:NoSchedule"
+    volumeIOPS: 3000
+    volumeSize: 80
+    volumeThroughput: 125
+    volumeType: gp3
+metadata:
+  name: inneed
+  region: ap-south-1
+  version: "1.26"
+privateCluster:
+  enabled: false
+  skipEndpointCreation: false
+vpc:
+  autoAllocateIPv6: false
+  cidr: 192.168.0.0/16
+  clusterEndpoints:
+    privateAccess: false
+    publicAccess: true
+  manageSharedNodeSecurityGroupRules: true
+  nat:
+    gateway: Single
