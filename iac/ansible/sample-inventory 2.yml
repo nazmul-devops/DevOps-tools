@@ -1,0 +1,8 @@
+[webservers]
+web1.example.com or server-ip
+web2.example.com or server-ip
+
+[dbservers]
+
+server-ip
+server-ip
