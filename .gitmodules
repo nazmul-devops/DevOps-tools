@@ -1,0 +1,3 @@
+[submodule "public-cloud/public-cloud/aws/certified-aws-solutions-architect-associate"]
+	path = public-cloud/public-cloud/aws/certified-aws-solutions-architect-associate
+	url = https://github.com/Ernyoke/certified-aws-solutions-architect-associate.git
